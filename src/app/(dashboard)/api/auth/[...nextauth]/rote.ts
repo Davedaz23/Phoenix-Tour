@@ -2,13 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   return NextResponse.json({
-    message: 'Admin API endpoint',
-    endpoints: [
-      '/api/admin/tours',
-      '/api/admin/bookings',
-      '/api/admin/guides',
-      '/api/admin/analytics'
-    ]
+    message: 'Authentication API',
+    endpoints: ['/api/auth/login', '/api/auth/register', '/api/auth/logout']
   });
 }
 
@@ -17,12 +12,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     return NextResponse.json({
       success: true,
-      message: 'Admin action processed',
-      data: body
+      message: 'Auth request received'
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Invalid request body' },
+      { error: 'Invalid request' },
       { status: 400 }
     );
   }
