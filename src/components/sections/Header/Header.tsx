@@ -59,7 +59,7 @@ export default function Header() {
             </div>
             <div className="hidden md:flex items-center gap-2">
               <Phone className="w-4 h-4" />
-              <span>+1 (555) 123-4567</span>
+              <span>+251 (912) 345-6789</span>
             </div>
           </div>
         </div>
