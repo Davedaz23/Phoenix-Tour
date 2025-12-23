@@ -4,15 +4,17 @@ import FeaturedTours from '@/components/sections/FeaturedTours';
 import WhyChooseUs from '@/components/sections/WhyChooseUs';
 import Testimonials from '@/components/sections/Testimonials';
 import CallToAction from '@/components/sections/CallToAction';
+import Footer from '@/components/sections/Footer/Footer';
 
 export default function HomePage() {
   return (
     <main className="min-h-screen">
       <Hero />
       <FeaturedTours />
-      <WhyChooseUs />
+      {/* <WhyChooseUs /> */}
       <Testimonials />
       <CallToAction />
+      {/* <Footer/> */}
     </main>
   );
 }

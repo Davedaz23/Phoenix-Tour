@@ -8,7 +8,7 @@ import { Compass, Map, Users, Info, Phone } from 'lucide-react';
 const navItems = [
   { label: 'Home', href: '/', icon: Compass },
   { label: 'Tours', href: '/tours', icon: Map },
-  { label: 'Guides', href: '/guides', icon: Users },
+  // { label: 'Guides', href: '/guides', icon: Users },
   { label: 'About', href: '/about', icon: Info },
   { label: 'Contact', href: '/contact', icon: Phone },
 ];

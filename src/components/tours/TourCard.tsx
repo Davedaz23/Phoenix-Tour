@@ -1,34 +1,34 @@
-// src/components/tours/TourCard.tsx - Updated for Ethiopia
-import { Clock, Users, MapPin, Star, Flag, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, Star, Flag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { getIconComponent, difficultyColors } from '@/lib/utils/tour-icons';
 
 interface TourCardProps {
   tour: {
-    id: number;
+    _id: string;
     title: string;
+    slug: string;
     description: string;
+    shortDescription?: string;
     duration: string;
     difficulty: string;
     price: number;
+    discountPrice?: number;
     rating: number;
     category: string;
+    region: string;
     image: string;
     tags: string[];
-    icon: React.ComponentType<any>;
+    iconName: string;
     highlight?: string;
+    isFeatured?: boolean;
+     // Add this
   };
+    onExploreClick?: () => void;
 }
 
-export default function TourCard({ tour }: TourCardProps) {
-  const Icon = tour.icon;
+export default function TourCard({ tour, onExploreClick }: TourCardProps) {
+  const Icon = getIconComponent(tour.iconName);
   
-  // Difficulty color mapping
-  const difficultyColors: Record<string, string> = {
-    'Easy': 'bg-green-100 text-green-800',
-    'Moderate': 'bg-yellow-100 text-yellow-800',
-    'Challenging': 'bg-red-100 text-red-800'
-  };
-
   return (
     <div className="group relative bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-primary-500 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/20">
       {/* Ethiopian Flag Badge */}
@@ -43,25 +43,44 @@ export default function TourCard({ tour }: TourCardProps) {
         </div>
       </div>
 
+      {/* Featured Badge */}
+      {tour.isFeatured && (
+        <div className="absolute top-4 right-4 z-10">
+          <span className="px-3 py-1.5 bg-yellow-500/90 backdrop-blur-sm text-white text-sm font-semibold rounded-full">
+            Featured
+          </span>
+        </div>
+      )}
+
       {/* Image Container */}
       <div className="relative h-64 overflow-hidden">
         <div 
           className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
           style={{ backgroundImage: `url(${tour.image})` }}
         />
+        
         {/* Category Badge */}
-        <div className="absolute top-4 right-4">
+        <div className="absolute bottom-4 left-4">
           <span className="px-3 py-1.5 bg-primary-500/90 backdrop-blur-sm text-white text-sm font-semibold rounded-full">
             {tour.category}
           </span>
         </div>
+        
         {/* Price Badge */}
         <div className="absolute bottom-4 right-4">
           <div className="px-4 py-2 bg-white/95 backdrop-blur-sm rounded-full shadow-lg">
-            <span className="text-2xl font-bold text-primary-600">${tour.price}</span>
+            {tour.discountPrice ? (
+              <>
+                <span className="text-sm text-gray-500 line-through mr-2">${tour.price}</span>
+                <span className="text-2xl font-bold text-red-600">${tour.discountPrice}</span>
+              </>
+            ) : (
+              <span className="text-2xl font-bold text-primary-600">${tour.price}</span>
+            )}
             <span className="text-gray-600 text-sm">/person</span>
           </div>
         </div>
+        
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
       </div>
@@ -95,7 +114,7 @@ export default function TourCard({ tour }: TourCardProps) {
 
         {/* Description */}
         <p className="text-gray-600 mb-4 line-clamp-2">
-          {tour.description}
+          {tour.shortDescription || tour.description}
         </p>
 
         {/* Highlight */}
@@ -116,36 +135,32 @@ export default function TourCard({ tour }: TourCardProps) {
           </div>
           <div className="flex items-center gap-2 text-gray-700">
             <MapPin className="w-4 h-4 text-primary-500" />
-            <span className="text-sm">Ethiopia</span>
+            <span className="text-sm">{tour.region}</span>
           </div>
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {tour.tags.map((tag) => (
-            <span 
-              key={tag} 
-              className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-primary-100 hover:text-primary-700 transition-colors"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        {tour.tags && tour.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {tour.tags.slice(0, 4).map((tag) => (
+              <span 
+                key={tag} 
+                className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-primary-100 hover:text-primary-700 transition-colors"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* CTA Button */}
-        <Link
-          href={`/tours/ethiopia/${tour.id}`}
-          className="block w-full text-center py-3 bg-gradient-to-r from-primary-500 to-yellow-600 text-white font-semibold rounded-xl hover:from-primary-600 hover:to-yellow-700 transition-all duration-300 hover:scale-105 group/btn"
-        >
-          <span className="flex items-center justify-center gap-2">
-            Explore This Tour
-            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-          </span>
-        </Link>
+       <button
+        onClick={onExploreClick} // Use the passed handler
+        className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-primary-500 to-orange-500 text-white font-medium rounded-xl hover:from-primary-600 hover:to-orange-600 transition-all duration-300"
+      >
+        Explore This Tour
+      </button>
       </div>
-
-      {/* Hover Effect Border */}
-      <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary-500 rounded-2xl transition-all duration-500 pointer-events-none"></div>
     </div>
   );
 }

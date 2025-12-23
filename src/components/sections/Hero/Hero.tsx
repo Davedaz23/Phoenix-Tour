@@ -4,9 +4,11 @@
 import { ArrowRight, MapPin, Calendar, Users } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
+import ApplyTourModal from '@/components/modals/ApplyTourModal';
 
 export default function Hero() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   const heroImages = [
     'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80',
@@ -21,6 +23,7 @@ export default function Hero() {
   ];
 
   return (
+    <>
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Gradient */}
       <div 
@@ -67,13 +70,12 @@ export default function Hero() {
                 className="w-full px-6 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
-            <Link
-              href="/tours"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary-500/30"
-            >
-              Explore Tours
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+           <button
+          onClick={() => setShowModal(true)}
+          className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary-500/30"
+        >
+          Apply for a Tour Today
+        </button>
           </div>
         </div>
 
@@ -109,5 +111,10 @@ export default function Hero() {
         </div>
       </div>
     </section>
+     <ApplyTourModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+      />
+      </>
   );
 }

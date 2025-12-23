@@ -26,13 +26,13 @@ export default function Error({
         </div>
 
         {/* Error Message */}
-        <h1 className="text-3xl font-heading font-bold text-gray-900 mb-4">
+        {/* <h1 className="text-3xl font-heading font-bold text-gray-900 mb-4">
           Oops! Something went wrong
         </h1>
         
         <p className="text-gray-600 mb-8">
           We're sorry, but an unexpected error has occurred. Our team has been notified and is working on a fix.
-        </p>
+        </p> */}
 
         {/* Error Details (Collapsible) */}
         <details className="mb-8 text-left">

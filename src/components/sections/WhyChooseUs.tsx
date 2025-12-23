@@ -55,7 +55,7 @@ export default function WhyChooseUs() {
           <div>
             <div className="inline-flex items-center gap-2 text-primary-500 font-semibold mb-4">
               <div className="w-4 h-4 bg-primary-500 rounded-full animate-pulse"></div>
-              WHY CHOOSE US
+            Why Travel with Phoenix Ethiopia Tour?
             </div>
             <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">
               <span className="text-white">The </span>
@@ -73,8 +73,9 @@ export default function WhyChooseUs() {
                   <Award className="w-6 h-6 text-primary-500" />
                 </div>
                 <div>
-                  <h4 className="text-white font-semibold text-xl mb-2">Award-Winning Service</h4>
-                  <p className="text-gray-400">Consistently rated 5-stars by thousands of happy travelers</p>
+                  <h4 className="text-white font-semibold text-xl mb-2">Expert Guides</h4>
+                  <p className="text-gray-400">Our experienced local guides are passionate about Ethiopia and eager to
+share their knowledge with you.</p>
                 </div>
               </div>
               
@@ -83,8 +84,29 @@ export default function WhyChooseUs() {
                   <Heart className="w-6 h-6 text-primary-500" />
                 </div>
                 <div>
-                  <h4 className="text-white font-semibold text-xl mb-2">Local Impact</h4>
-                  <p className="text-gray-400">20% of profits support local conservation and community projects</p>
+                  <h4 className="text-white font-semibold text-xl mb-2">Authentic Experiences</h4>
+                  <p className="text-gray-400">Immerse yourself in local cultures, participate in traditional ceremonies, and
+enjoy authentic Ethiopian cuisine.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-primary-500/20 rounded-xl">
+                  <Heart className="w-6 h-6 text-primary-500" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold text-xl mb-2">Safety & Comfort</h4>
+                  <p className="text-gray-400">Your safety and comfort are our top priorities. We adhere to the highest
+standards of service and care.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-primary-500/20 rounded-xl">
+                  <Heart className="w-6 h-6 text-primary-500" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold text-xl mb-2">Responsible Tourism</h4>
+                  <p className="text-gray-400">We promote sustainable travel practices that benefit local communities and
+protect Ethiopia’s natural environment.</p>
                 </div>
               </div>
             </div>

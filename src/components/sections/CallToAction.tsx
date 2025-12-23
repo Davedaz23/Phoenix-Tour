@@ -47,7 +47,7 @@ export default function CallToAction() {
           </p>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+          {/* <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Link
               href="/tours/ethiopia"
               className="group inline-flex items-center justify-center gap-3 px-10 py-5 bg-white text-green-700 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-2xl text-lg"
@@ -64,7 +64,7 @@ export default function CallToAction() {
               <span>Schedule Free Consultation</span>
               <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </Link>
-          </div>
+          </div> */}
 
           {/* Contact Info - Ethiopian Context */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">

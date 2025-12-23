@@ -1,86 +1,92 @@
-// src/app/(dashboard)/dashboard/layout.tsx
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Menu, X, Home, Users, Map, Calendar, Settings, LogOut } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { redirect, usePathname } from 'next/navigation';
+import Sidebar from '@/components/admin/Sidebar';
+import Header from '@/components/admin/Header';
+import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const pathname = usePathname();
+  
+  // Check authentication pages
+  const isLoginPage = pathname === '/dashboard/login';
+  const isSignupPage = pathname === '/dashboard/signup';
+  const isAuthPage = isLoginPage || isSignupPage;
 
-  const menuItems = [
-    { label: 'Overview', href: '/dashboard', icon: Home },
-    { label: 'Tours', href: '/dashboard/tours', icon: Map },
-    { label: 'Bookings', href: '/dashboard/bookings', icon: Calendar },
-    { label: 'Guides', href: '/dashboard/guides', icon: Users },
-    { label: 'Settings', href: '/dashboard/settings', icon: Settings },
-  ];
+  useEffect(() => {
+    console.log("Session status:", status, "Session data:", session);
+    
+    // Only run redirect logic after session is loaded
+    if (status === 'loading') {
+      return;
+    }
+
+    // If user is authenticated and on auth pages, redirect to dashboard
+    if (status === 'authenticated' && isAuthPage) {
+      console.log("Authenticated user on auth page, redirecting to dashboard");
+      redirect('/dashboard');
+      return;
+    }
+
+    // If user is not authenticated and not on auth pages, redirect to login
+    if (status === 'unauthenticated' && !isAuthPage) {
+      console.log("Unauthenticated user, redirecting to login");
+      redirect('/dashboard/login');
+      return;
+    }
+
+    // Check admin role if authenticated
+    if (status === 'authenticated' && session?.user) {
+      const isAdmin = session.user.role === 'admin' || session.user.role === 'super_admin';
+      
+      if (!isAdmin && pathname.startsWith('/dashboard')) {
+        console.log("Non-admin user trying to access dashboard, redirecting to home");
+        redirect('/');
+        return;
+      }
+    }
+  }, [session, status, pathname, isAuthPage]);
+
+  // Show loading state
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-green-500 mx-auto mb-4" />
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't show layout on auth pages (login/signup)
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar toggle */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow"
-      >
-        {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
-
-      {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-xl transform transition-transform duration-300
-        lg:translate-x-0 lg:static lg:inset-auto
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <div className="h-full flex flex-col">
-          {/* Logo */}
-          <div className="p-6 border-b">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">PT</span>
-              </div>
-              <div>
-                <div className="font-heading font-black text-gray-900">PHOENIX TOUR</div>
-                <div className="text-xs text-primary-500 uppercase">Dashboard</div>
-              </div>
-            </Link>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Footer */}
-          <div className="p-4 border-t">
-            <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full">
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Logout</span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Fixed Sidebar */}
+      <div className="fixed inset-y-0 left-0 z-30 w-64">
+        <Sidebar />
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 ml-0 lg:ml-64 min-w-0">
+        <div className="sticky top-0 z-20 bg-white">
+          <Header />
         </div>
-      </aside>
-
-      {/* Main content */}
-      <div className="lg:pl-64">
-        <main className="p-8">
-          {children}
+        <main className="py-6">
+          <div className="mx-auto px-4 sm:px-6 md:px-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>

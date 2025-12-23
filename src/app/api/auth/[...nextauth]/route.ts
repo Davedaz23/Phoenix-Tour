@@ -1,23 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+// src/app/api/auth/[...nextauth]/route.ts
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth/auth";
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json({
-    message: 'Authentication API',
-    endpoints: ['/api/auth/login', '/api/auth/register', '/api/auth/logout']
-  });
-}
+const handler = NextAuth(authOptions);
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    return NextResponse.json({
-      success: true,
-      message: 'Auth request received'
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Invalid request' },
-      { status: 400 }
-    );
-  }
-}
+export { handler as GET, handler as POST };

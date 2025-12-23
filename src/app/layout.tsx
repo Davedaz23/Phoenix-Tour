@@ -1,9 +1,7 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/sections/Header/Header"; // Add this import
-// import Footer from "@/components/sections/Footer/Footer"; // You'll need to create this
+import Providers from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,11 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}`}>
       <body className="antialiased min-h-screen w-full">
-        <Header /> {/* Add Header here */}
-        <main className="flex-1">
+        <Providers>
           {children}
-        </main>
-        {/* <Footer /> Add Footer later */}
+        </Providers>
       </body>
     </html>
   );
