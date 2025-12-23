@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",  
+        "install:vercel": "npm install --legacy-peer-deps"
+
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
