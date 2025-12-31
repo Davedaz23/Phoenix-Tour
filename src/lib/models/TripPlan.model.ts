@@ -335,23 +335,23 @@ TripPlanSchema.virtual('budgetPerPerson').get(function(this: ITripPlan) {
 });
 
 // Pre-save middleware
-TripPlanSchema.pre('save', function(next) {
-  // Auto-calculate budget range based on budget
-  if (this.budget < 1000) {
-    this.budgetRange = 'budget';
-  } else if (this.budget < 5000) {
-    this.budgetRange = 'mid-range';
-  } else {
-    this.budgetRange = 'luxury';
-  }
+// TripPlanSchema.pre('save', function(next) {
+//   // Auto-calculate budget range based on budget
+//   if (this.budget < 1000) {
+//     this.budgetRange = 'budget';
+//   } else if (this.budget < 5000) {
+//     this.budgetRange = 'mid-range';
+//   } else {
+//     this.budgetRange = 'luxury';
+//   }
   
-  // Set priority based on budget and timeline
-  if (this.budget > 10000 || this.duration > 21) {
-    this.priority = 'high';
-  }
+//   // Set priority based on budget and timeline
+//   if (this.budget > 10000 || this.duration > 21) {
+//     this.priority = 'high';
+//   }
   
-  next();
-});
+//   next();
+// });
 
 const TripPlan: Model<ITripPlan> = mongoose.models.TripPlan || mongoose.model<ITripPlan>('TripPlan', TripPlanSchema);
 

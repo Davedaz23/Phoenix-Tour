@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import TripPlan from '@/lib/models/TripPlan.model';
 import Tour from '@/lib/models/Tour';
-import { sendTripPlanEmail } from '@/lib/email/tripPlanEmail';
-import { validateTripPlan } from '@/lib/validations/tripPlan.validation';
-import { findMatchingTours } from '@/lib/services/tourMatchingService';
+// import { sendTripPlanEmail } from '@/lib/email/tripPlanEmail';
+// import { validateTripPlan } from '@/lib/validations/tripPlan.validation';
+// import { findMatchingTours } from '@/lib/services/tourMatchingService';
 
 // Mock data for fallback
 const mockTours = [
@@ -55,17 +55,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Validate input
-    const validationErrors = validateTripPlan(body);
-    if (validationErrors.length > 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Validation failed',
-          errors: validationErrors 
-        },
-        { status: 400 }
-      );
-    }
+    // const validationErrors = validateTripPlan(body);
+    // if (validationErrors.length > 0) {
+    //   return NextResponse.json(
+    //     { 
+    //       success: false, 
+    //       message: 'Validation failed',
+    //       errors: validationErrors 
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
     
     // Try to connect to database
     let useMockData = false;
@@ -80,26 +80,26 @@ export async function POST(request: NextRequest) {
     // Find matching tours
     let recommendedTours: any[] = [];
     
-    if (!useMockData) {
-      try {
-        // Use real tour matching service
-        recommendedTours = await findMatchingTours(body);
-      } catch (tourError) {
-        console.error('Tour matching failed, using mock tours:', tourError);
-        recommendedTours = mockTours;
-        useMockData = true;
-      }
-    } else {
-      // Use mock tours
-      recommendedTours = mockTours.map(tour => ({
-        tourId: tour._id,
-        title: tour.title,
-        price: tour.price,
-        duration: tour.duration,
-        matchScore: tour.matchScore,
-        reason: getMatchReason(tour, body)
-      }));
-    }
+    // if (!useMockData) {
+    //   try {
+    //     // Use real tour matching service
+    //     recommendedTours = await findMatchingTours(body);
+    //   } catch (tourError) {
+    //     console.error('Tour matching failed, using mock tours:', tourError);
+    //     recommendedTours = mockTours;
+    //     useMockData = true;
+    //   }
+    // } else {
+    //   // Use mock tours
+    //   recommendedTours = mockTours.map(tour => ({
+    //     tourId: tour._id,
+    //     title: tour.title,
+    //     price: tour.price,
+    //     duration: tour.duration,
+    //     matchScore: tour.matchScore,
+    //     reason: getMatchReason(tour, body)
+    //   }));
+    // }
     
     // Get client info
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
@@ -130,18 +130,18 @@ export async function POST(request: NextRequest) {
     }
     
     // Send email notifications (in background)
-    try {
-      await sendTripPlanEmail({
-        customerEmail: body.email,
-        customerName: body.name,
-        tripPlanData: body,
-        recommendedTours,
-        useMockData
-      });
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      // Continue even if email fails
-    }
+    // try {
+    //   await sendTripPlanEmail({
+    //     customerEmail: body.email,
+    //     customerName: body.name,
+    //     tripPlanData: body,
+    //     recommendedTours,
+    //     useMockData
+    //   });
+    // } catch (emailError) {
+    //   console.error('Email sending failed:', emailError);
+    //   // Continue even if email fails
+    // }
     
     return NextResponse.json({
       success: true,
