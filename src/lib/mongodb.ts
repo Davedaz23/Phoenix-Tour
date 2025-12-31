@@ -1,11 +1,11 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
 if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local'
-  );
+  console.log('⚠️  MONGODB_URI not set - running without database');
+  // Don't throw error, just return
+  throw new Error('Please define MONGODB_URI environment variable');
 }
 
 /**
@@ -16,6 +16,8 @@ if (!MONGODB_URI) {
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
+  isConnected: boolean;
+  connectionAttempts: number;
 }
 
 // Extend global type
@@ -23,73 +25,94 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+let cached: MongooseCache = global.mongoose || { 
+  conn: null, 
+  promise: null,
+  isConnected: false,
+  connectionAttempts: 0
+};
 
 if (!global.mongoose) {
   global.mongoose = cached;
 }
 
 async function connectDB(): Promise<typeof mongoose> {
-  if (cached.conn) {
+  if (cached.conn && cached.isConnected) {
     console.log('✅ Using existing MongoDB connection');
-    return cached.conn; // This is now safe because TypeScript knows it's not null here
+    return cached.conn;
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
+    const opts: mongoose.ConnectOptions = {
+      serverSelectionTimeoutMS: 15000,    // Reduced from 30000
+      socketTimeoutMS: 20000,             // Reduced from 45000
+      connectTimeoutMS: 10000,            // Added
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
+      minPoolSize: 2,
+      maxIdleTimeMS: 10000,
+      waitQueueTimeoutMS: 5000,
+      retryWrites: true,
+      retryReads: true,
+      w: 'majority',
+      // Remove family: 4 - let MongoDB driver decide
+      bufferCommands: false,
     };
 
-    console.log('🔄 Creating new MongoDB connection...');
-    
-    // Add retry logic
+    console.log('🔗 Connecting to MongoDB Atlas...');
+
     const maxRetries = 3;
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-          console.log('✅ MongoDB connected successfully');
-          console.log(`📊 Database: ${mongooseInstance.connection.db?.databaseName || 'unknown'}`);
-          return mongooseInstance;
-        });
+        console.log(`Attempt ${attempt}/${maxRetries}...`);
         
-        break; // Success, exit retry loop
+        // Create connection promise
+        cached.promise = mongoose.connect(MONGODB_URI, opts)
+          .then((mongooseInstance: typeof mongoose) => {
+            console.log(`✅ MongoDB Atlas connected to: ${mongooseInstance.connection.db?.databaseName || 'unknown'}`);
+            cached.isConnected = true;
+            cached.connectionAttempts = 0;
+            return mongooseInstance;
+          })
+          .catch((error: Error) => {
+            console.error('❌ Connection promise rejected:', error.message);
+            cached.promise = null;
+            cached.isConnected = false;
+            throw error;
+          });
+
+        // Wait for connection
+        cached.conn = await cached.promise;
+        break; // Exit retry loop on success
+        
       } catch (error: any) {
+        cached.connectionAttempts++;
         lastError = error;
-        console.error(`❌ Connection attempt ${attempt} failed:`, error.message);
+        console.error(`❌ MongoDB connection failed (attempt ${cached.connectionAttempts}):`, error.message);
+        
+        // Clean up failed attempt
+        cached.promise = null;
+        cached.conn = null;
         
         if (attempt < maxRetries) {
-          const delay = attempt * 2000; // Exponential backoff
-          console.log(`⏳ Retrying in ${delay/1000} seconds...`);
+          const delay = Math.min(5000 * attempt, 15000);
+          console.log(`🔄 Retrying in ${delay/1000} seconds...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
     }
 
     if (!cached.promise && lastError) {
-      throw lastError;
+      console.log('⚠️  MongoDB not connected - some features may not work');
+      console.log('💡 Possible issues:');
+      console.log('1. Check if your IP is whitelisted in MongoDB Atlas');
+      console.log('2. Verify username/password in MONGODB_URI');
+      console.log('3. Check internet connection');
+      throw new Error(`Failed to connect after ${maxRetries} attempts: ${lastError.message}`);
     }
   }
 
-  try {
-    // The promise should exist at this point
-    if (!cached.promise) {
-      throw new Error('Failed to create connection promise');
-    }
-    
-    cached.conn = await cached.promise;
-  } catch (error) {
-    cached.promise = null;
-    cached.conn = null;
-    console.error('❌ Failed to establish MongoDB connection:', error);
-    throw error;
-  }
-
-  // At this point, cached.conn should not be null
   if (!cached.conn) {
     throw new Error('Failed to establish MongoDB connection');
   }
@@ -97,35 +120,48 @@ async function connectDB(): Promise<typeof mongoose> {
   return cached.conn;
 }
 
-// Connection event handlers
-if (process.env.NODE_ENV === 'development') {
-  mongoose.connection.on('connected', () => {
-    console.log('✅ Mongoose connected to DB');
-  });
 
-  mongoose.connection.on('error', (err) => {
-    console.error('❌ Mongoose connection error:', err.message);
-  });
 
-  mongoose.connection.on('disconnected', () => {
-    console.log('⚠️ Mongoose disconnected');
+// Add health check function
+export async function checkDBHealth() {
+  if (!cached.isConnected || !cached.conn) {
+    return { 
+      status: 'disconnected', 
+      connected: false,
+      message: 'MongoDB not connected'
+    };
+  }
+  
+  try {
+    const db = cached.conn.connection.db;
+    if (!db) {
+      return { 
+        status: 'disconnected', 
+        connected: false,
+        message: 'No database instance'
+      };
+    }
+    
+    // Quick ping
+    await db.admin().ping();
+    
+    return { 
+      status: 'healthy', 
+      connected: true,
+      database: db.databaseName,
+      readyState: cached.conn.connection.readyState
+    };
+  } catch (error: any) {
+    cached.isConnected = false;
     cached.conn = null;
-  });
-}
-
-// Graceful shutdown for serverless environments
-if (typeof window === 'undefined') {
-  process.on('SIGINT', async () => {
-    await mongoose.connection.close();
-    console.log('Mongoose connection closed through app termination');
-    process.exit(0);
-  });
-
-  process.on('SIGTERM', async () => {
-    await mongoose.connection.close();
-    console.log('Mongoose connection closed through app termination');
-    process.exit(0);
-  });
+    cached.promise = null;
+    
+    return { 
+      status: 'unhealthy', 
+      connected: false, 
+      error: error.message 
+    };
+  }
 }
 
 export default connectDB;

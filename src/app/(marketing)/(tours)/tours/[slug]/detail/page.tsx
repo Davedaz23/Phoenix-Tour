@@ -1,5 +1,5 @@
+// src/app/(marketing)/(tours)/tours/[slug]/detail/page.tsx
 import TourDetailView from '@/components/tours/TourDetailView';
-import { getTourBySlug } from '@/lib/actions/tour.actions';
 import { notFound } from 'next/navigation';
 
 interface PageProps {
@@ -10,12 +10,28 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const tour = await getTourBySlug(params.slug);
+  // Try to fetch from API
+  let tour = null;
   
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tours/${params.slug}`, {
+      cache: 'no-store'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.tour) {
+        tour = data.tour;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching tour for metadata:', error);
+  }
+
   if (!tour) {
     return {
-      title: 'Tour Not Found',
-      description: 'The requested tour could not be found.',
+      title: 'Tour Details',
+      description: 'Explore detailed information about this Ethiopian tour package.',
     };
   }
 
@@ -32,11 +48,23 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function TourDetailPage({ params }: PageProps) {
-  const tour = await getTourBySlug(params.slug);
+  // Try to fetch from API on server
+  let tour = null;
   
-  if (!tour) {
-    notFound();
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tours/${params.slug}`, {
+      cache: 'no-store'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.tour) {
+        tour = data.tour;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching tour:', error);
   }
 
-  return <TourDetailView tourId={tour._id} />;
+  return <TourDetailView initialTour={tour} tourId={params.slug} />;
 }

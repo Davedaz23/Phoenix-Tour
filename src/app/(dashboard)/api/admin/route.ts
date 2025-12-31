@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
       '/api/admin/tours',
       '/api/admin/bookings',
       '/api/admin/guides',
+      '/api/admin/destinations',
       '/api/admin/analytics'
     ]
   });

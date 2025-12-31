@@ -1,4 +1,4 @@
-// src/components/sections/Header/Header.tsx (Fixed Version)
+// src/components/sections/Header/Header.tsx (Updated Version)
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -14,9 +14,13 @@ import {
   User, 
   Globe, 
   BookOpen,
-  Camera 
+  Camera,
+  Compass,
+  Mountain,
+  Building,
+  Sun,
+  Trees
 } from 'lucide-react';
-import Navigation from './Navigation';
 import ApplyTourModal from '@/components/modals/ApplyTourModal';
 
 // Define the type for nav items
@@ -26,12 +30,14 @@ interface NavItem {
   dropdown?: Array<{
     label: string;
     href: string;
+    icon?: React.ReactNode;
   }>;
 }
 
 interface DropdownItem {
   label: string;
   href: string;
+  icon?: React.ReactNode;
 }
 
 export default function Header() {
@@ -60,20 +66,43 @@ export default function Header() {
     }
   }, [isApplyModalOpen]);
 
-  // Define navItems with proper typing
+  // Define navItems with Destinations dropdown
   const navItems: NavItem[] = [
     { label: 'Home', href: '/' },
     { 
+      label: 'Destinations', 
+      href: '/destinations',
+      dropdown: [
+        { label: 'Addis Ababa', href: '/destinations/addis-ababa', icon: <Building className="w-3 h-3" /> },
+        { label: 'Northern Circuit', href: '/destinations/northern-circuit', icon: <Mountain className="w-3 h-3" /> },
+        { label: 'Southern Circuit', href: '/destinations/southern-circuit', icon: <Compass className="w-3 h-3" /> },
+        { label: 'Eastern (Harar)', href: '/destinations/eastern-harar', icon: <Sun className="w-3 h-3" /> },
+        { label: 'Western (Gambella)', href: '/destinations/western-gambella', icon: <Trees className="w-3 h-3" /> }
+      ]
+    },
+    { 
       label: 'Tours', 
       href: '/tours',
-      dropdown: [] // Empty array for now, you can add items later
+      dropdown: [
+        { label: 'Ethiopia Highlights', href: '/tours?category=Ethiopia Highlights' },
+        { label: 'Historical Tours', href: '/tours?category=Historical Tours' },
+        { label: 'Cultural Tours', href: '/tours?category=Cultural Tours' },
+        { label: 'Nature & Trekking', href: '/tours?category=Nature & Trekking' },
+        { label: 'Adventure', href: '/tours?category=Adventure' },
+        { label: 'Day Trips', href: '/tours?category=Day Trips' }
+      ]
     },
     { label: 'About Us', href: '/about' },
     { label: 'Contact', href: '/contact' },
     { 
       label: 'Blog', 
       href: '/blog',
-      dropdown: [] // Empty array for now, you can add items later
+      // dropdown: [
+      //   { label: 'All Articles', href: '/blog' },
+      //   { label: 'Travel Tips', href: '/blog/category/travel-tips' },
+      //   { label: 'Culture', href: '/blog/category/culture' },
+      //   { label: 'Food & Drink', href: '/blog/category/food-drink' }
+      // ]
     }
   ];
 
@@ -179,27 +208,27 @@ export default function Header() {
             {/* Logo Section */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-14 h-14 relative overflow-hidden rounded-lg group-hover:scale-105 transition-transform duration-300">
+                <div className="w-38 h-20 relative overflow-hidden rounded-lg group-hover:scale-105 transition-transform duration-300">
                   <Image
-                    src="/images/logos/logo.png"
+                    src="/images/logos/logo1.jpg"
                     alt="Phoenix Ethiopia Tour Logo"
-                    width={56}
-                    height={56}
+                    width={300}
+                    height={100}
                     className="object-contain"
                     priority
                   />
                 </div>
-                <div className="absolute -inset-2 bg-primary-500/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300"></div>
+                {/* <div className="absolute -inset-2 bg-primary-500/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300"></div> */}
               </div>
               
-              <div className="flex flex-col">
+              {/* <div className="flex flex-col">
                 <span className="text-2xl font-heading font-black tracking-tight text-gray-900 group-hover:text-primary-600 transition-colors">
                   PHOENIX ETHIOPIA TOUR
                 </span>
                 <span className="text-xs font-medium text-primary-500 tracking-widest uppercase">
                   DISCOVER ETHIOPIA'S STORIES
                 </span>
-              </div>
+              </div> */}
             </Link>
 
             {/* Desktop Navigation */}
@@ -216,7 +245,7 @@ export default function Header() {
                     className="flex items-center gap-1 text-gray-700 hover:text-primary-500 font-medium transition-colors duration-200"
                   >
                     {item.label === 'Blog' && <BookOpen className="w-4 h-4 mr-1" />}
-                    {item.label === 'Gallery' && <Camera className="w-4 h-4 mr-1" />}
+                    {item.label === 'Destinations' && <MapPin className="w-4 h-4 mr-1" />}
                     {item.label}
                     {/* Only show chevron if dropdown exists AND has items */}
                     {item.dropdown && item.dropdown.length > 0 && <ChevronDown className="w-4 h-4" />}
@@ -241,7 +270,7 @@ export default function Header() {
                           className="flex items-center gap-2 px-5 py-3 text-gray-600 hover:text-primary-500 hover:bg-primary-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
                           onClick={() => setActiveDropdown(null)}
                         >
-                          {subItem.label === 'All Articles' && <BookOpen className="w-3 h-3" />}
+                          {subItem.icon && subItem.icon}
                           {subItem.label}
                         </Link>
                       ))}
@@ -267,14 +296,14 @@ export default function Header() {
                 Gallery
               </Link>
               
-              {/* Blog Quick Access */}
-              <Link
-                href="/blog"
-                className="px-4 py-2 bg-primary-50 text-primary-700 font-medium rounded-full hover:bg-primary-100 transition-colors flex items-center gap-2"
+              {/* Destinations Quick Access */}
+              {/* <Link
+                href="/destinations"
+                className="px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-full hover:bg-blue-100 transition-colors flex items-center gap-2"
               >
-                <BookOpen className="w-4 h-4" />
-                Latest Posts
-              </Link>
+                <MapPin className="w-4 h-4" />
+                Destinations
+              </Link> */}
               
               {/* Travel Button */}
               <button
@@ -310,7 +339,7 @@ export default function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {item.label === 'Blog' && <BookOpen className="w-4 h-4" />}
-                      {item.label === 'Gallery' && <Camera className="w-4 h-4" />}
+                      {item.label === 'Destinations' && <MapPin className="w-4 h-4" />}
                       {item.label}
                     </Link>
                     {item.dropdown && item.dropdown.length > 0 && (
@@ -322,7 +351,7 @@ export default function Header() {
                             className="flex items-center gap-2 py-2 text-gray-500 hover:text-primary-500"
                             onClick={() => setIsMobileMenuOpen(false)}
                           >
-                            {subItem.label === 'All Articles' && <BookOpen className="w-3 h-3" />}
+                            {subItem.icon && subItem.icon}
                             {subItem.label}
                           </Link>
                         ))}
@@ -348,14 +377,14 @@ export default function Header() {
                     Explore Gallery
                   </Link>
                   
-                  {/* Blog Mobile Button */}
+                  {/* Destinations Mobile Button */}
                   <Link
-                    href="/blog"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-primary-50 text-primary-700 font-medium rounded-lg"
+                    href="/destinations"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-blue-50 text-blue-700 font-medium rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <BookOpen className="w-4 h-4" />
-                    Latest Blog Posts
+                    <MapPin className="w-4 h-4" />
+                    Browse Destinations
                   </Link>
                   
                   <button
