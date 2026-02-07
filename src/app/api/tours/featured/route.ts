@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     ]);
     
     const categoryStats: Record<string, number> = {};
-    stats.forEach(stat => {
+    stats.forEach((stat: { _id: string | number; count: number; }) => {
       categoryStats[stat._id] = stat.count;
     });
     

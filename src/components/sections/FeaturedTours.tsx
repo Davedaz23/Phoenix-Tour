@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import TourCard from '@/components/tours/TourCard';
 import ApplyTourModal from '@/components/modals/ApplyTourModal';
-import { ArrowRight, TrendingUp, Sparkles, MapPin, Clock, Users, Star } from 'lucide-react';
+import { ArrowRight, TrendingUp, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Tour {
   _id: string;
@@ -45,7 +45,7 @@ const fallbackTours = [
     difficulty: 'Challenging',
     price: 850,
     rating: 4.9,
-    category: 'Nature & Trekking',
+    category: 'Mountain Trekking',
     region: 'Northern Ethiopia',
     image: 'https://images.unsplash.com/photo-1559561736-9e6dafa9e7b0?auto=format&fit=crop&w=800&q=80',
     tags: ['UNESCO', 'Wildlife', 'Photography', 'Hiking'],
@@ -63,7 +63,7 @@ const fallbackTours = [
     difficulty: 'Easy',
     price: 680,
     rating: 4.8,
-    category: 'Historical Tours',
+    category: 'Historical',
     region: 'Northern Ethiopia',
     image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=800&q=80',
     tags: ['UNESCO', 'Historical', 'Spiritual', 'Cultural'],
@@ -81,7 +81,7 @@ const fallbackTours = [
     difficulty: 'Moderate',
     price: 920,
     rating: 4.8,
-    category: 'Cultural Tours',
+    category: 'Cultural Heritage',
     region: 'Southern Ethiopia',
     image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80',
     tags: ['Tribal', 'Cultural', 'Photography', 'Indigenous'],
@@ -117,7 +117,7 @@ const fallbackTours = [
     difficulty: 'Easy',
     price: 65,
     rating: 4.7,
-    category: 'Day Trips',
+    category: 'Cultural Heritage',
     region: 'Central Ethiopia',
     image: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
     tags: ['City Tour', 'Cultural', 'Historical', 'Food'],
@@ -135,59 +135,80 @@ const fallbackTours = [
     difficulty: 'Moderate',
     price: 1850,
     rating: 4.9,
-    category: 'Ethiopia Highlights',
+    category: 'Cultural Heritage',
     region: 'Northern Ethiopia',
     image: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
     tags: ['Classic', 'Comprehensive', 'Best Seller', 'UNESCO'],
     iconName: 'Star',
     highlight: 'All major historical and natural sites in one tour',
     isFeatured: true
+  },
+  {
+    _id: 'fallback-7',
+    title: 'Bale Mountains National Park',
+    slug: 'bale-mountains-national-park',
+    description: 'Discover the unique Afro-alpine ecosystem and spot rare Ethiopian wolves in their natural habitat.',
+    shortDescription: 'Discover unique Afro-alpine ecosystem',
+    duration: '4 days',
+    difficulty: 'Moderate',
+    price: 780,
+    rating: 4.7,
+    category: 'Wildlife',
+    region: 'Southern Ethiopia',
+    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=800&q=80',
+    tags: ['Wildlife', 'Trekking', 'National Park', 'Endemic Species'],
+    iconName: 'Tree',
+    highlight: 'Spot Ethiopian wolves and mountain nyala',
+    isFeatured: true
+  },
+  {
+    _id: 'fallback-8',
+    title: 'Gondar Castles & Churches',
+    slug: 'gondar-castles-churches',
+    description: 'Visit the "Camelot of Africa" - the royal castles of Gondar and nearby mountain churches.',
+    shortDescription: 'Visit the "Camelot of Africa"',
+    duration: '2 days',
+    difficulty: 'Easy',
+    price: 350,
+    rating: 4.6,
+    category: 'Historical',
+    region: 'Northern Ethiopia',
+    image: 'https://images.unsplash.com/photo-1564507004663-b6dfb3e2ede5?auto=format&fit=crop&w=800&q=80',
+    tags: ['Castles', 'UNESCO', 'Historical', 'Architecture'],
+    iconName: 'Castle',
+    highlight: 'Explore Fasil Ghebbi - the Royal Enclosure',
+    isFeatured: true
+  },
+  {
+    _id: 'fallback-9',
+    title: 'Harar & Dire Dawa Discovery',
+    slug: 'harar-dire-dawa-discovery',
+    description: 'Explore the ancient walled city of Harar and experience hyena feeding traditions.',
+    shortDescription: 'Explore ancient walled city',
+    duration: '3 days',
+    difficulty: 'Easy',
+    price: 520,
+    rating: 4.7,
+    category: 'Cultural Heritage',
+    region: 'Eastern Ethiopia',
+    image: 'https://images.unsplash.com/photo-1511317559916-56d5ddb625e8?auto=format&fit=crop&w=800&q=80',
+    tags: ['Walled City', 'Cultural', 'Islamic Heritage', 'Hyena Feeding'],
+    iconName: 'City',
+    highlight: 'Witness the unique hyena feeding ceremony',
+    isFeatured: true
   }
 ];
 
-// Category mapping for fallback data - Updated to match client's categories
-const categoryMappings: Record<string, string[]> = {
-  'All Tours': ['Ethiopia Highlights', 'Historical Tours', 'Cultural Tours', 'Nature & Trekking', 'Adventure', 'Day Trips'],
-  'Ethiopia Highlights': ['Ethiopia Highlights'],
-  'Historical Tours': ['Historical Tours'],
-  'Cultural Tours': ['Cultural Tours'],
-  'Nature & Trekking': ['Nature & Trekking'],
-  'Adventure': ['Adventure'],
-  'Day Trips': ['Day Trips']
-};
-
-// Client's requested categories with descriptions
-const clientCategories = [
-  { 
-    name: 'Ethiopia Highlights', 
-    description: 'Classic routes covering major attractions',
-    icon: 'Star'
-  },
-  { 
-    name: 'Historical Tours', 
-    description: 'Lalibela, Gondar, Axum - Ancient kingdoms',
-    icon: 'Castle'
-  },
-  { 
-    name: 'Cultural Tours', 
-    description: 'Omo Valley tribes & traditional experiences',
-    icon: 'Users'
-  },
-  { 
-    name: 'Nature & Trekking', 
-    description: 'Simien Mountains, Bale Mountains, wildlife',
-    icon: 'Mountain'
-  },
-  { 
-    name: 'Adventure', 
-    description: 'Rafting, biking, off-road experiences',
-    icon: 'Activity'
-  },
-  { 
-    name: 'Day Trips', 
-    description: 'Addis Ababa, Debre Libanos, easy excursions',
-    icon: 'Clock'
-  }
+// Updated categories based on your new structure
+const newCategories = [
+  'Mountain Trekking',
+  'Cultural Heritage',
+  'Adventure',
+  'Wildlife',
+  'Historical',
+  'Spiritual',
+  'Photography',
+  'Luxury'
 ];
 
 export default function FeaturedTours({ id }: { id?: string }) {
@@ -197,13 +218,20 @@ export default function FeaturedTours({ id }: { id?: string }) {
   const [activeCategory, setActiveCategory] = useState('All Tours');
   const [categories, setCategories] = useState<Category[]>([
     { name: 'All Tours', count: 0, active: true },
-    { name: 'Ethiopia Highlights', count: 0, active: false },
-    { name: 'Historical Tours', count: 0, active: false },
-    { name: 'Cultural Tours', count: 0, active: false },
-    { name: 'Nature & Trekking', count: 0, active: false },
-    { name: 'Adventure', count: 0, active: false },
-    { name: 'Day Trips', count: 0, active: false }
+    ...newCategories.map(category => ({
+      name: category,
+      count: 0,
+      active: false
+    }))
   ]);
+
+  // Carousel state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleCards, setVisibleCards] = useState(3);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const autoPlayRef = useRef<NodeJS.Timeout>();
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Modal state
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
@@ -215,60 +243,113 @@ export default function FeaturedTours({ id }: { id?: string }) {
     difficulty?: string;
   } | null>(null);
 
+  // Update category counts from tours
+  const updateCategoryCounts = useCallback((tours: Tour[], activeCat: string) => {
+    const categoryCounts: Record<string, number> = {
+      'All Tours': tours.length
+    };
+
+    // Initialize all new categories with 0
+    newCategories.forEach(category => {
+      categoryCounts[category] = 0;
+    });
+
+    // Count tours for each category
+    tours.forEach(tour => {
+      const category = tour.category;
+      if (categoryCounts.hasOwnProperty(category)) {
+        categoryCounts[category]++;
+      }
+    });
+
+    // Update categories state
+    setCategories(prev => prev.map(cat => ({
+      ...cat,
+      count: categoryCounts[cat.name] || 0,
+      active: cat.name === activeCat
+    })));
+  }, []);
+
+  // Calculate visible cards based on screen size
+  useEffect(() => {
+    const updateVisibleCards = () => {
+      if (window.innerWidth < 768) {
+        setVisibleCards(1);
+      } else if (window.innerWidth < 1024) {
+        setVisibleCards(2);
+      } else {
+        setVisibleCards(3);
+      }
+    };
+
+    updateVisibleCards();
+    window.addEventListener('resize', updateVisibleCards);
+    return () => window.removeEventListener('resize', updateVisibleCards);
+  }, []);
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (isAutoPlaying && featuredTours.length > visibleCards) {
+      autoPlayRef.current = setInterval(() => {
+        setCurrentIndex((prev) => {
+          const nextIndex = prev + 1;
+          return nextIndex >= featuredTours.length ? 0 : nextIndex;
+        });
+      }, 3000);
+
+      return () => {
+        if (autoPlayRef.current) {
+          clearInterval(autoPlayRef.current);
+        }
+      };
+    }
+  }, [isAutoPlaying, featuredTours.length, visibleCards]);
+
+  // Handle category click
+  const handleCategoryClick = async (categoryName: string) => {
+    setActiveCategory(categoryName);
+    setCurrentIndex(0); // Reset carousel to start
+    
+    // Update category active state immediately
+    setCategories(prev => prev.map(cat => ({
+      ...cat,
+      active: cat.name === categoryName
+    })));
+
+    // If using fallback, filter immediately
+    if (useFallback) {
+      const filteredTours = filterFallbackTours(categoryName);
+      setFeaturedTours(filteredTours);
+      updateCategoryCounts(filteredTours, categoryName);
+    } else {
+      // Otherwise fetch from backend
+      await fetchFeaturedTours(categoryName);
+    }
+  };
+
   // Filter fallback tours by category
   const filterFallbackTours = (categoryName: string): Tour[] => {
     if (categoryName === 'All Tours') {
       return fallbackTours;
     }
     
-    const mappedCategories = categoryMappings[categoryName] || [];
-    return fallbackTours.filter(tour => 
-      mappedCategories.includes(tour.category)
-    );
+    return fallbackTours.filter(tour => tour.category === categoryName);
   };
 
-  // Update category counts for fallback data
-  const updateFallbackCategoryCounts = () => {
-    const counts: Record<string, number> = {};
-    
-    // Count tours in each mapped category
-    Object.keys(categoryMappings).forEach(catName => {
-      if (catName === 'All Tours') {
-        counts[catName] = fallbackTours.length;
-      } else {
-        counts[catName] = filterFallbackTours(catName).length;
-      }
-    });
-    
-    setCategories(prev => prev.map(cat => ({
-      ...cat,
-      count: counts[cat.name] || 0,
-      active: cat.name === activeCategory
-    })));
-  };
-
+  // Fetch featured tours
   const fetchFeaturedTours = async (category?: string) => {
     setLoading(true);
-    setUseFallback(false);
     
     try {
       const params = new URLSearchParams();
-      params.append('limit', '6');
+      params.append('limit', '12');
       params.append('sort', '-rating');
       
       if (category && category !== 'All Tours') {
         params.append('category', category);
       }
 
-      // Add timeout to prevent hanging requests
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-      const response = await fetch(`/api/tours/featured?${params}`, {
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
+      const response = await fetch(`/api/tours?${params}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -277,50 +358,44 @@ export default function FeaturedTours({ id }: { id?: string }) {
       const data = await response.json();
       
       if (data.success && data.tours && data.tours.length > 0) {
-        setFeaturedTours(data.tours);
-        updateCategoryCounts(data.stats);
+        const tours = data.tours;
+        setFeaturedTours(tours);
+        setUseFallback(false);
+        
+        // Update category counts based on fetched tours
+        updateCategoryCounts(tours, category || 'All Tours');
       } else {
-        // If API returns empty array or no success flag
-        setUseFallback(true);
-        const filteredFallback = filterFallbackTours(category || 'All Tours');
-        setFeaturedTours(filteredFallback);
-        updateFallbackCategoryCounts();
+        throw new Error('No tours found in API');
       }
     } catch (error) {
       console.error('Failed to fetch featured tours:', error);
-      // Use fallback on any error
+      
+      // Fallback to static data
       setUseFallback(true);
-      const filteredFallback = filterFallbackTours(activeCategory);
+      const filteredFallback = filterFallbackTours(category || 'All Tours');
       setFeaturedTours(filteredFallback);
-      updateFallbackCategoryCounts();
+      updateCategoryCounts(filteredFallback, category || 'All Tours');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchTourStats = async () => {
-    if (useFallback) return;
-    
-    try {
-      const response = await fetch('/api/tours/stats');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          updateCategoryCounts(data.stats);
-        }
+  // Initial data fetch
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      try {
+        await fetchFeaturedTours('All Tours');
+      } catch (error) {
+        console.error('Failed to load initial data:', error);
+        // Already handled in fetchFeaturedTours
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch tour stats:', error);
-    }
-  };
+    };
 
-  const updateCategoryCounts = (stats: any) => {
-    setCategories(prev => prev.map(cat => ({
-      ...cat,
-      count: stats?.categories?.[cat.name] || 0,
-      active: cat.name === activeCategory
-    })));
-  };
+    loadInitialData();
+  }, []);
 
   // Handle explore tour click
   const handleExploreTour = (tour: Tour) => {
@@ -340,45 +415,82 @@ export default function FeaturedTours({ id }: { id?: string }) {
     setSelectedTour(null);
   };
 
-  useEffect(() => {
-    fetchFeaturedTours(activeCategory);
-    if (!useFallback) {
-      fetchTourStats();
-    }
-  }, [activeCategory]);
-
-  const handleCategoryClick = (categoryName: string) => {
-    setActiveCategory(categoryName);
+  // Carousel navigation
+  const nextSlide = () => {
+    if (isAnimating || featuredTours.length === 0) return;
     
-    if (useFallback) {
-      // Filter fallback tours for the selected category
-      const filteredTours = filterFallbackTours(categoryName);
-      setFeaturedTours(filteredTours);
-      
-      // Update active state and counts
-      setCategories(prev => prev.map(cat => ({
-        ...cat,
-        active: cat.name === categoryName
-      })));
-    } else {
-      // For live data, fetch from API
-      fetchFeaturedTours(categoryName);
-      setCategories(prev => prev.map(cat => ({
-        ...cat,
-        active: cat.name === categoryName
-      })));
+    setIsAnimating(true);
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+    }
+    setIsAutoPlaying(false);
+    
+    setCurrentIndex((prev) => {
+      const nextIndex = prev + 1;
+      return nextIndex >= featuredTours.length ? 0 : nextIndex;
+    });
+
+    // Allow animation to complete
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 500);
+
+    // Restart auto-play after manual navigation
+    setTimeout(() => setIsAutoPlaying(true), 3000);
+  };
+
+  const prevSlide = () => {
+    if (isAnimating || featuredTours.length === 0) return;
+    
+    setIsAnimating(true);
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+    }
+    setIsAutoPlaying(false);
+    
+    setCurrentIndex((prev) => {
+      const prevIndex = prev - 1;
+      return prevIndex < 0 ? featuredTours.length - 1 : prevIndex;
+    });
+
+    // Allow animation to complete
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 500);
+
+    // Restart auto-play after manual navigation
+    setTimeout(() => setIsAutoPlaying(true), 3000);
+  };
+
+  // Get visible tours based on current index
+  const getVisibleTours = () => {
+    if (featuredTours.length === 0) return [];
+    
+    const tours = [];
+    
+    // Get the tours to display (current index and next ones)
+    for (let i = 0; i < Math.min(visibleCards, featuredTours.length); i++) {
+      const tourIndex = (currentIndex + i) % featuredTours.length;
+      tours.push(featuredTours[tourIndex]);
+    }
+    
+    return tours;
+  };
+
+  // Calculate total slides for indicators
+  const totalSlides = featuredTours.length;
+
+  // Pause auto-play on hover
+  const handleMouseEnter = () => {
+    setIsAutoPlaying(false);
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
     }
   };
 
-  // Initialize with fallback if needed
-  useEffect(() => {
-    if (!loading && featuredTours.length === 0 && !useFallback) {
-      setUseFallback(true);
-      const filteredFallback = filterFallbackTours(activeCategory);
-      setFeaturedTours(filteredFallback);
-      updateFallbackCategoryCounts();
-    }
-  }, [loading, featuredTours, useFallback, activeCategory]);
+  const handleMouseLeave = () => {
+    setIsAutoPlaying(true);
+  };
 
   return (
     <>
@@ -405,44 +517,7 @@ export default function FeaturedTours({ id }: { id?: string }) {
               diverse cultures, and breathtaking natural wonders.
             </p>
             
-            {/* Client's Tour Categories Overview */}
-            {/* <div className="mt-12 bg-gradient-to-r from-primary-50 to-yellow-50 rounded-2xl p-8 border border-primary-100">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                Explore Our Main Tour Categories
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {clientCategories.map((category) => (
-                  <div 
-                    key={category.name} 
-                    className="bg-white rounded-xl p-6 border border-gray-200 hover:border-primary-300 transition-all duration-300 hover:shadow-md"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-primary-100 rounded-lg">
-                        {category.name === 'Ethiopia Highlights' && <Star className="w-5 h-5 text-primary-600" />}
-                        {category.name === 'Historical Tours' && <MapPin className="w-5 h-5 text-primary-600" />}
-                        {category.name === 'Cultural Tours' && <Users className="w-5 h-5 text-primary-600" />}
-                        {category.name === 'Nature & Trekking' && <Sparkles className="w-5 h-5 text-primary-600" />}
-                        {category.name === 'Adventure' && <TrendingUp className="w-5 h-5 text-primary-600" />}
-                        {category.name === 'Day Trips' && <Clock className="w-5 h-5 text-primary-600" />}
-                      </div>
-                      <h4 className="font-bold text-gray-900">{category.name}</h4>
-                    </div>
-                    <p className="text-gray-600 text-sm">{category.description}</p>
-                    <div className="mt-4">
-                      <a 
-                        href={`/tours?category=${encodeURIComponent(category.name)}`}
-                        className="text-primary-600 hover:text-primary-700 text-sm font-medium inline-flex items-center gap-1"
-                      >
-                        Browse tours
-                        <ArrowRight className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div> */}
-            
-            {/* Stats & Ethopian Motto */}
+            {/* Stats & Ethiopian Motto */}
             <div className="mt-8 inline-flex flex-col md:flex-row items-center gap-4 bg-gradient-to-r from-yellow-500/10 to-green-500/10 px-6 py-4 rounded-2xl border border-yellow-200">
               <div className="flex items-center gap-3">
                 <div className="flex">
@@ -485,9 +560,12 @@ export default function FeaturedTours({ id }: { id?: string }) {
               <button
                 key={category.name}
                 onClick={() => handleCategoryClick(category.name)}
+                disabled={category.count === 0 && category.name !== 'All Tours'}
                 className={`px-5 py-2.5 rounded-full font-medium transition-all duration-300 border flex items-center gap-2 ${
                   category.active 
                     ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30 border-primary-500' 
+                    : category.count === 0 && category.name !== 'All Tours'
+                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-primary-50 border-gray-300 hover:border-primary-300'
                 }`}
               >
@@ -495,6 +573,8 @@ export default function FeaturedTours({ id }: { id?: string }) {
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   category.active 
                     ? 'bg-primary-600/30 text-white' 
+                    : category.count === 0
+                    ? 'bg-gray-200 text-gray-500'
                     : 'bg-gray-100 text-gray-600'
                 }`}>
                   {category.count}
@@ -503,41 +583,112 @@ export default function FeaturedTours({ id }: { id?: string }) {
             ))}
           </div>
 
-          {/* Loading State */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl shadow p-6 animate-pulse">
-                  <div className="h-64 bg-gray-200 rounded-xl mb-4"></div>
-                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
+          {/* Carousel Container */}
+          <div 
+            className="relative mb-8"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            {/* Carousel Navigation Buttons */}
+            {featuredTours.length > visibleCards && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  disabled={isAnimating}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-700" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  disabled={isAnimating}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-700" />
+                </button>
+              </>
+            )}
+
+            {/* Carousel Content */}
+            <div ref={carouselRef} className="overflow-hidden">
+              {loading ? (
+                <div className="flex justify-center gap-8">
+                  {[...Array(visibleCards)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`flex-shrink-0 ${visibleCards === 3 ? 'w-1/3' : visibleCards === 2 ? 'w-1/2' : 'w-full'}`}
+                    >
+                      <div className="bg-white rounded-2xl shadow p-6 animate-pulse">
+                        <div className="h-64 bg-gray-200 rounded-xl mb-4"></div>
+                        <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                        <div className="h-10 bg-gray-200 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : featuredTours.length > 0 ? (
+                <div className="flex justify-center gap-8">
+                  {getVisibleTours().map((tour, index) => (
+                    <div 
+                      key={`${tour._id}-${index}`}
+                      className={`flex-shrink-0 transition-all duration-500 ease-out ${
+                        visibleCards === 3 ? 'w-1/3' : 
+                        visibleCards === 2 ? 'w-1/2' : 
+                        'w-full'
+                      }`}
+                    >
+                      <TourCard 
+                        tour={tour}
+                        onExploreClick={() => handleExploreTour(tour)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 text-lg mb-4">
+                    No tours found in this category
+                  </div>
+                  <button
+                    onClick={() => handleCategoryClick('All Tours')}
+                    className="px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600"
+                  >
+                    View All Tours
+                  </button>
+                </div>
+              )}
             </div>
-          ) : featuredTours.length > 0 ? (
-            <>
-              {/* Tours Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredTours.map((tour) => (
-                  <TourCard 
-                    key={tour._id} 
-                    tour={tour}
-                    onExploreClick={() => handleExploreTour(tour)}
+
+            {/* Carousel Indicators */}
+            {totalSlides > visibleCards && (
+              <div className="flex justify-center gap-2 mt-8">
+                {Array.from({ length: totalSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    disabled={isAnimating}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === currentIndex 
+                        ? 'bg-primary-500 w-8' 
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    } ${isAnimating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    aria-label={`Go to slide ${index + 1}`}
                   />
                 ))}
               </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-lg mb-4">
-                No tours found in this category
-              </div>
+            )}
+          </div>
+
+          {/* Auto-play toggle */}
+          {featuredTours.length > visibleCards && (
+            <div className="flex justify-center items-center gap-2 mb-8">
               <button
-                onClick={() => handleCategoryClick('All Tours')}
-                className="px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600"
+                onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+                className="text-sm text-gray-600 hover:text-primary-600 transition-colors flex items-center gap-2"
               >
-                View All Tours
+                <div className={`w-3 h-3 rounded-full border ${isAutoPlaying ? 'bg-primary-500 border-primary-500' : 'bg-white border-gray-400'}`} />
+                {isAutoPlaying ? 'Auto-sliding' : 'Paused'}
               </button>
             </div>
           )}

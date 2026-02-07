@@ -528,22 +528,46 @@ export default function CreateTourPage() {
               </div>
 
               {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
-                </label>
-                <select
-                  required
-                  value={formData.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                >
-                  <option value="">Select category</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
+          {/* Category */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Category *
+  </label>
+  <div className="flex flex-wrap gap-2 mb-2">
+    {[
+      'Ethiopia Highlights',
+      'Historical Tours', 
+      'Cultural Tours',
+      'Nature & Trekking',
+      'Adventure',
+      'Day Trips'
+    ].map((category) => (
+      <button
+        key={category}
+        type="button"
+        onClick={() => handleInputChange('category', category)}
+        className={`px-4 py-2 rounded-full font-medium transition-all duration-300 border text-sm ${
+          formData.category === category
+            ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30 border-primary-500' 
+            : 'bg-white text-gray-700 hover:bg-primary-50 border-gray-300 hover:border-primary-300'
+        }`}
+      >
+        {category}
+      </button>
+    ))}
+  </div>
+  {/* <select
+    required
+    value={formData.category}
+    onChange={(e) => handleInputChange('category', e.target.value)}
+    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent mt-2"
+  >
+    <option value="">Or select from dropdown</option>
+    {categories.map(category => (
+      <option key={category} value={category}>{category}</option>
+    ))}
+  </select> */}
+</div>
 
               {/* Icon */}
               <div>
@@ -1037,7 +1061,7 @@ export default function CreateTourPage() {
                     </div>
 
                     {/* Meals */}
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Meals Included
                       </label>
@@ -1055,7 +1079,7 @@ export default function CreateTourPage() {
                       <p className="mt-1 text-sm text-gray-500">
                         Hold Ctrl/Cmd to select multiple
                       </p>
-                    </div>
+                    </div> */}
 
                     {/* Activities */}
                     <div className="md:col-span-2">

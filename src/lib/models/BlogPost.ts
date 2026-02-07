@@ -1,93 +1,65 @@
-// src/lib/models/BlogPost.ts - Simplified Version (No Middleware)
-import mongoose, { Schema, Document } from 'mongoose';
+// src/lib/models/BlogPost.ts
+import mongoose from 'mongoose';
 
-export interface IBlogPost extends Document {
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  author: {
-    name: string;
-    avatar?: string;
-    role: string;
-    bio?: string;
-  };
-  category: string;
-  tags: string[];
-  coverImage?: string;
-  images?: string[];
-  readTime: number;
-  views: number;
-  likes: number;
-  comments: number;
-  featured: boolean;
-  published: boolean;
-  publishedAt: Date;
-  updatedAt: Date;
-  seoTitle?: string;
-  seoDescription?: string;
-  metaKeywords?: string[];
-}
-
-const BlogPostSchema = new Schema<IBlogPost>({
+const blogPostSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
-    trim: true
+    required: [true, 'Blog post title is required'],
+    trim: true,
+    maxlength: [200, 'Title cannot exceed 200 characters']
   },
   slug: {
     type: String,
-    required: true,
+    required: [true, 'Slug is required'],
     unique: true,
     lowercase: true,
-    trim: true,
-    index: true // Added index like in Application model
+    trim: true
   },
   excerpt: {
     type: String,
-    required: true,
-    maxlength: 200
+    required: [true, 'Excerpt is required'],
+    maxlength: [300, 'Excerpt cannot exceed 300 characters']
   },
   content: {
     type: String,
-    required: true
+    required: [true, 'Blog content is required']
   },
-  author: {
-    name: { type: String, required: true },
-    avatar: { type: String },
-    role: { type: String, required: true },
-    bio: { type: String }
-  },
-  category: {
+  featuredImage: {
     type: String,
-    required: true,
-    enum: [
-      'Cultural Insights',
-      'Mountain Trekking',
-      'Coffee Culture',
-      'Historical Sites',
-      'Travel Photography',
-      'Adventure Travel',
-      'Hidden Gems',
-      'Travel Tips',
-      'Food & Dining',
-      'Festivals & Events'
-    ]
-  },
-  tags: [{
-    type: String,
-    trim: true
-  }],
-  coverImage: {
-    type: String
+    required: [true, 'Featured image is required']
   },
   images: [{
-    type: String
+    url: String,
+    alt: String,
+    caption: String
+  }],
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  categories: [{
+    type: String,
+    enum: [
+      'Ethiopian Culture',
+      'Travel Tips',
+      'History & Heritage',
+      'Food & Coffee',
+      'Nature & Wildlife',
+      'Festivals & Events',
+      'Photography',
+      'Adventure',
+      'Local Stories'
+    ]
+  }],
+  tags: [{
+    type: String,
+    lowercase: true
   }],
   readTime: {
     type: Number,
     required: true,
-    min: 1
+    default: 5
   },
   views: {
     type: Number,
@@ -97,56 +69,33 @@ const BlogPostSchema = new Schema<IBlogPost>({
     type: Number,
     default: 0
   },
-  comments: {
+  shares: {
     type: Number,
     default: 0
   },
-  featured: {
+  isFeatured: {
     type: Boolean,
     default: false
   },
-  published: {
+  isPublished: {
     type: Boolean,
-    default: false
+    default: true
   },
-  publishedAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  seoTitle: {
-    type: String
-  },
-  seoDescription: {
-    type: String,
-    maxlength: 160
-  },
-  metaKeywords: [{
-    type: String
+  metaTitle: String,
+  metaDescription: String,
+  seoKeywords: [String],
+  relatedTours: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tour'
   }]
 }, {
-  timestamps: true // This automatically handles createdAt and updatedAt
+  timestamps: true
 });
 
-// Create text indexes for search
-BlogPostSchema.index({ 
-  title: 'text', 
-  excerpt: 'text', 
-  content: 'text',
-  'author.name': 'text' 
-});
+// Index for faster queries
+blogPostSchema.index({ title: 'text', excerpt: 'text', content: 'text' });
+blogPostSchema.index({ slug: 1 });
+blogPostSchema.index({ categories: 1 });
+blogPostSchema.index({ isFeatured: 1, createdAt: -1 });
 
-// Create compound indexes for common queries
-BlogPostSchema.index({ category: 1, publishedAt: -1 });
-BlogPostSchema.index({ featured: 1, publishedAt: -1 });
-BlogPostSchema.index({ tags: 1, publishedAt: -1 });
-
-// REMOVED: The problematic middleware
-// The timestamps: true option automatically handles updatedAt
-// You should handle slug generation in your API/service layer instead
-
-// Use the same pattern as the Application model
-export default mongoose.models.BlogPost || mongoose.model<IBlogPost>('BlogPost', BlogPostSchema);
+export const BlogPost = mongoose.models.BlogPost || mongoose.model('BlogPost', blogPostSchema);

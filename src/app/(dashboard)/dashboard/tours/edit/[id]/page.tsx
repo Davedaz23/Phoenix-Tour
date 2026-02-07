@@ -623,22 +623,78 @@ export default function EditTourPage() {
               </div>
 
               {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
-                </label>
-                <select
-                  required
-                  value={formData.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="">Select category</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Category */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Category *
+  </label>
+  
+  {/* Category Pills */}
+  {/* <div className="flex flex-wrap gap-2 mb-3">
+    {[
+      'Ethiopia Highlights',
+      'Historical Tours', 
+      'Cultural Tours',
+      'Nature & Trekking',
+      'Adventure',
+      'Day Trips',
+      'Other'
+    ].map((category) => (
+      <button
+        key={category}
+        type="button"
+        onClick={() => setFormData(prev => ({ ...prev, category }))}
+        className={`px-4 py-2 rounded-full font-medium transition-all duration-300 border text-sm ${
+          formData.category === category
+            ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30 border-primary-500' 
+            : 'bg-white text-gray-700 hover:bg-primary-50 border-gray-300 hover:border-primary-300'
+        }`}
+      >
+        {category}
+      </button>
+    ))}
+  </div> */}
+  
+  {/* Category Dropdown with current selection display */}
+  <div className="relative">
+    <select
+      required
+      value={formData.category}
+      onChange={(e) => handleInputChange('category', e.target.value)}
+      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none bg-white"
+    >
+      <option value="">Select or type a category</option>
+      {categories.map(category => (
+        <option key={category} value={category}>{category}</option>
+      ))}
+    </select>
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+      </svg>
+    </div>
+  </div>
+  
+  {/* Selected category display */}
+  {formData.category && (
+    <div className="mt-3 p-3 bg-primary-50 rounded-lg border border-primary-200">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
+          <span className="font-medium text-primary-700">Selected:</span>
+          <span className="text-gray-900">{formData.category}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => handleInputChange('category', '')}
+          className="text-gray-400 hover:text-red-500"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )}
+</div>
 
               {/* Icon */}
               <div>
@@ -1132,7 +1188,7 @@ export default function EditTourPage() {
                     </div>
 
                     {/* Meals */}
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Meals Included
                       </label>
@@ -1150,7 +1206,7 @@ export default function EditTourPage() {
                       <p className="mt-1 text-sm text-gray-500">
                         Hold Ctrl/Cmd to select multiple
                       </p>
-                    </div>
+                    </div> */}
 
                     {/* Activities */}
                     <div className="md:col-span-2">

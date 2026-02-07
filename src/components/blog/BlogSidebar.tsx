@@ -1,224 +1,137 @@
-// src/components/blog/BlogSidebar.tsx - Updated for single post page
+// src/components/blog/BlogSidebar.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Calendar, 
-  Tag, 
-  Share2, 
-  Facebook, 
-  Twitter, 
-  Linkedin, 
-  Mail,
-  Bookmark,
-  Printer,
-  Coffee,
-  MapPin
-} from 'lucide-react';
-
-interface RelatedPost {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
-  publishedAt: string;
-}
+import { Search, TrendingUp, Calendar, Tag, User, Clock } from 'lucide-react';
 
 interface BlogSidebarProps {
-  post: any;
-  relatedPosts: RelatedPost[];
+  popularPosts?: Array<{
+    _id: string;
+    title: string;
+    slug: string;
+    views: number;
+    createdAt: string;
+  }>;
+  tags?: Array<{ _id: string; count: number }>;
 }
 
-export default function BlogSidebar({ post, relatedPosts }: BlogSidebarProps) {
-  const [isBookmarked, setIsBookmarked] = useState(false);
+export default function BlogSidebar({ popularPosts, tags }: BlogSidebarProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [recentPosts, setRecentPosts] = useState(popularPosts || []);
 
-  const handleShare = (platform: string) => {
-    const url = window.location.href;
-    const title = post.title;
-    
-    switch (platform) {
-      case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-        break;
-      case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
-        break;
-      case 'linkedin':
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
-        break;
-      case 'email':
-        window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`Check out this article: ${url}`)}`;
-        break;
+  // Example recent posts if not provided
+  useEffect(() => {
+    if (!popularPosts) {
+      setRecentPosts([
+        { _id: '1', title: 'Coffee Ceremony Guide', slug: 'coffee-ceremony', views: 2500, createdAt: '2024-01-15' },
+        { _id: '2', title: 'Best Time to Visit Ethiopia', slug: 'best-time-visit', views: 1800, createdAt: '2024-01-10' },
+        { _id: '3', title: 'Lalibela Photography Tips', slug: 'lalibela-photography', views: 1200, createdAt: '2024-01-05' },
+        { _id: '4', title: 'Omo Valley Tribes', slug: 'omo-valley-tribes', views: 900, createdAt: '2024-01-01' },
+      ]);
     }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
+  }, [popularPosts]);
 
   return (
-    <div className="space-y-8">
-      {/* Share Widget */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <h3 className="font-semibold text-gray-900 text-lg mb-4">Share This Story</h3>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => handleShare('facebook')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-          >
-            <Facebook className="w-4 h-4" />
-            <span className="text-sm font-medium">Facebook</span>
-          </button>
-          <button
-            onClick={() => handleShare('twitter')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors"
-          >
-            <Twitter className="w-4 h-4" />
-            <span className="text-sm font-medium">Twitter</span>
-          </button>
-          <button
-            onClick={() => handleShare('linkedin')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-800/10 text-blue-800 hover:bg-blue-800/20 rounded-lg transition-colors"
-          >
-            <Linkedin className="w-4 h-4" />
-            <span className="text-sm font-medium">LinkedIn</span>
-          </button>
-          <button
-            onClick={() => handleShare('email')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-          >
-            <Mail className="w-4 h-4" />
-            <span className="text-sm font-medium">Email</span>
-          </button>
-        </div>
-        
-        <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100">
-          <button
-            onClick={() => setIsBookmarked(!isBookmarked)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-              isBookmarked 
-                ? 'bg-primary-50 text-primary-600' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-primary-600' : ''}`} />
-            <span className="text-sm">{isBookmarked ? 'Saved' : 'Save'}</span>
-          </button>
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
-          >
-            <Printer className="w-4 h-4" />
-            <span className="text-sm">Print</span>
-          </button>
-        </div>
+    <div className="space-y-6">
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search blog articles..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        />
       </div>
 
-      {/* Author Info */}
-      <div className="bg-gradient-to-br from-primary-50 to-yellow-50 rounded-2xl p-6 border border-primary-100">
-        <h3 className="font-semibold text-gray-900 text-lg mb-4">About the Author</h3>
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-yellow-500 p-0.5">
-            <div className="w-full h-full rounded-full bg-white p-0.5">
-              <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center">
-                <span className="text-lg font-semibold text-gray-700">
-{post.author.name.split(' ').map((n: string) => n[0]).join('')}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="font-semibold text-gray-900">{post.author.name}</div>
-            <div className="text-gray-600 text-sm mb-2">{post.author.role}</div>
-            {post.author.bio && (
-              <p className="text-gray-600 text-sm">{post.author.bio}</p>
-            )}
-            <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
-              <Coffee className="w-3 h-3" />
-              <span>Specializes in Ethiopian Culture & Travel</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Related Posts */}
-      {relatedPosts.length > 0 && (
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
-          <h3 className="font-semibold text-gray-900 text-lg mb-4 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary-500" />
-            Related Stories
-          </h3>
-          <div className="space-y-4">
-            {relatedPosts.map((relatedPost) => (
-              <Link
-                key={relatedPost._id}
-                href={`/blog/${relatedPost.slug}`}
-                className="block group"
-              >
-                <div className="p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="text-xs font-medium text-primary-600 mb-1">
-                    {relatedPost.category}
-                  </div>
-                  <div className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2">
-                    {relatedPost.title}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {formatDate(relatedPost.publishedAt)}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tags */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
-        <h3 className="font-semibold text-gray-900 text-lg mb-4 flex items-center gap-2">
-          <Tag className="w-5 h-5 text-primary-500" />
-          Article Tags
+      {/* Popular Posts */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <h3 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary-500" />
+          Popular Articles
         </h3>
-        <div className="flex flex-wrap gap-2">
-          {post.tags.map((tag: string) => (
+        
+        <div className="space-y-4">
+          {recentPosts.map((post) => (
             <Link
-              key={tag}
-              href={`/blog/tag/${tag}`}
-              className="px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-primary-50 hover:text-primary-700 rounded-full text-sm transition-colors"
+              key={post._id}
+              href={`/blog/${post.slug}`}
+              className="group flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
             >
-              {tag}
+              <div className="flex-shrink-0 w-2 h-2 bg-primary-500 rounded-full mt-2" />
+              <div className="flex-1">
+                <div className="font-medium text-gray-900 text-sm group-hover:text-primary-600 transition-colors">
+                  {post.title}
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <User className="w-3 h-3" />
+                    {post.views.toLocaleString()} views
+                  </span>
+                </div>
+              </div>
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Ethiopian Calendar Widget */}
-      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-100">
-        <h3 className="font-semibold text-gray-900 text-lg mb-3">Ethiopian Calendar</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Today's Date:</span>
-            <span className="font-semibold text-gray-900">የካቲት 15, 2017</span>
-          </div>
-          <div className="text-sm text-gray-500">
-            Ethiopia follows its own calendar with 13 months. Plan your trip according to local festivals and seasons.
-          </div>
-          <Link
-            href="/blog/ethiopian-calendar-guide"
-            className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-medium"
-          >
-            Learn about Ethiopian dates →
-          </Link>
+      {/* Tags */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <h3 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <Tag className="w-5 h-5 text-primary-500" />
+          Popular Tags
+        </h3>
+        
+        <div className="flex flex-wrap gap-2">
+          {(tags || [
+            { _id: 'coffee', count: 24 },
+            { _id: 'culture', count: 32 },
+            { _id: 'photography', count: 18 },
+            { _id: 'travel-tips', count: 15 },
+            { _id: 'lalibela', count: 12 },
+            { _id: 'omo-valley', count: 9 },
+            { _id: 'festivals', count: 7 },
+            { _id: 'ethiopian-food', count: 11 },
+          ]).map((tag) => (
+            <Link
+              key={tag._id}
+              href={`/blog/tag/${tag._id}`}
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-700 rounded-full text-sm transition-colors"
+            >
+              <span>#{tag._id}</span>
+              <span className="text-xs text-gray-500">({tag.count})</span>
+            </Link>
+          ))}
         </div>
+      </div>
+
+      {/* Newsletter Signup */}
+      <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-6 text-white">
+        <h3 className="text-lg font-heading font-bold mb-3">Stay Updated</h3>
+        <p className="text-white/90 text-sm mb-4">
+          Get the latest travel stories, cultural insights, and exclusive offers.
+        </p>
+        
+        <div className="space-y-3">
+          <input
+            type="email"
+            placeholder="Your email address"
+            className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+          />
+          <button className="w-full py-3 bg-white text-primary-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
+            Subscribe
+          </button>
+        </div>
+        
+        <p className="text-white/70 text-xs mt-4">
+          No spam. Unsubscribe anytime.
+        </p>
       </div>
     </div>
   );

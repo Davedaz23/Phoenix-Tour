@@ -1,3 +1,5 @@
+
+//src\app\api\tours\stats\route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Tour from '@/lib/models/Tour';

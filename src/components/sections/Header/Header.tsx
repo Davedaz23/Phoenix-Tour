@@ -1,27 +1,25 @@
-// src/components/sections/Header/Header.tsx (Updated Version)
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { 
-  Menu, 
-  X, 
-  MapPin, 
-  Phone, 
-  ChevronDown, 
-  Search, 
-  User, 
-  Globe, 
-  BookOpen,
+import {
+  Menu,
+  X,
+  MapPin,
+  Phone,
+  ChevronDown,
+  Search,
   Camera,
-  Compass,
-  Mountain,
+  Globe,
+  BookOpen,
   Building,
+  Mountain,
+  Compass,
   Sun,
   Trees
 } from 'lucide-react';
 import ApplyTourModal from '@/components/modals/ApplyTourModal';
+import Logo from '@/components/ui/logo';
 
 // Define the type for nav items
 interface NavItem {
@@ -34,22 +32,15 @@ interface NavItem {
   }>;
 }
 
-interface DropdownItem {
-  label: string;
-  href: string;
-  icon?: React.ReactNode;
-}
-
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [dropdownHover, setDropdownHover] = useState(false);
-  
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
-  
+
   // Refs for dropdown containers
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const navItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -69,8 +60,8 @@ export default function Header() {
   // Define navItems with Destinations dropdown
   const navItems: NavItem[] = [
     { label: 'Home', href: '/' },
-    { 
-      label: 'Destinations', 
+    {
+      label: 'Destinations',
       href: '/destinations',
       dropdown: [
         { label: 'Addis Ababa', href: '/destinations/addis-ababa', icon: <Building className="w-3 h-3" /> },
@@ -80,8 +71,8 @@ export default function Header() {
         { label: 'Western (Gambella)', href: '/destinations/western-gambella', icon: <Trees className="w-3 h-3" /> }
       ]
     },
-    { 
-      label: 'Tours', 
+    {
+      label: 'Tours',
       href: '/tours',
       dropdown: [
         { label: 'Ethiopia Highlights', href: '/tours?category=Ethiopia Highlights' },
@@ -94,15 +85,9 @@ export default function Header() {
     },
     { label: 'About Us', href: '/about' },
     { label: 'Contact', href: '/contact' },
-    { 
-      label: 'Blog', 
+    {
+      label: 'Blog',
       href: '/blog',
-      // dropdown: [
-      //   { label: 'All Articles', href: '/blog' },
-      //   { label: 'Travel Tips', href: '/blog/category/travel-tips' },
-      //   { label: 'Culture', href: '/blog/category/culture' },
-      //   { label: 'Food & Drink', href: '/blog/category/food-drink' }
-      // ]
     }
   ];
 
@@ -118,9 +103,9 @@ export default function Header() {
   const handleMouseEnter = useCallback((label: string) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
     setActiveDropdown(label);
-    setDropdownHover(true);
   }, []);
 
   // Handle mouse leave for parent menu item
@@ -128,20 +113,18 @@ export default function Header() {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
+
     timeoutRef.current = setTimeout(() => {
-      if (!dropdownHover) {
-        setActiveDropdown(null);
-      }
-    }, 200); // 200ms delay
-  }, [dropdownHover]);
+      setActiveDropdown(null);
+    }, 150);
+  }, []);
 
   // Handle dropdown mouse enter
   const handleDropdownMouseEnter = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-    setDropdownHover(true);
   }, []);
 
   // Handle dropdown mouse leave
@@ -149,11 +132,32 @@ export default function Header() {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
+
     timeoutRef.current = setTimeout(() => {
-      setDropdownHover(false);
       setActiveDropdown(null);
-    }, 200);
+    }, 100);
+  }, []);
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Check if click is outside any dropdown
+      const isOutside = Object.values(dropdownRefs.current).every(ref => {
+        return ref && !ref.contains(event.target as Node);
+      });
+
+      // Check if click is outside any nav item with dropdown
+      const isOutsideNavItems = Object.values(navItemRefs.current).every(ref => {
+        return ref && !ref.contains(event.target as Node);
+      });
+      
+      if (isOutside && isOutsideNavItems) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Clean up timeouts on unmount
@@ -165,10 +169,22 @@ export default function Header() {
     };
   }, []);
 
-  // FIX: Proper ref callback function for TypeScript
+  // Refs for dropdown containers
   const setDropdownRef = useCallback((label: string) => (el: HTMLDivElement | null) => {
     dropdownRefs.current[label] = el;
   }, []);
+
+  // Refs for nav items
+  const setNavItemRef = useCallback((label: string) => (el: HTMLDivElement | null) => {
+    navItemRefs.current[label] = el;
+  }, []);
+
+  // Handle nav item click (for mobile/tablet)
+  const handleNavItemClick = useCallback((label: string) => {
+    if (window.innerWidth < 1024) {
+      setActiveDropdown(activeDropdown === label ? null : label);
+    }
+  }, [activeDropdown]);
 
   return (
     <>
@@ -177,7 +193,7 @@ export default function Header() {
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            <span>📸 New Gallery: Explore Ethiopia's Beauty in Pictures & Videos!</span>
+            <span>📸 New Gallery: Explore Ethiopia&apos;s Beauty in Pictures & Videos!</span>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -207,28 +223,7 @@ export default function Header() {
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <div className="w-38 h-20 relative overflow-hidden rounded-lg group-hover:scale-105 transition-transform duration-300">
-                  <Image
-                    src="/images/logos/logo1.jpg"
-                    alt="Phoenix Ethiopia Tour Logo"
-                    width={300}
-                    height={100}
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-                {/* <div className="absolute -inset-2 bg-primary-500/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300"></div> */}
-              </div>
-              
-              {/* <div className="flex flex-col">
-                <span className="text-2xl font-heading font-black tracking-tight text-gray-900 group-hover:text-primary-600 transition-colors">
-                  PHOENIX ETHIOPIA TOUR
-                </span>
-                <span className="text-xs font-medium text-primary-500 tracking-widest uppercase">
-                  DISCOVER ETHIOPIA'S STORIES
-                </span>
-              </div> */}
+              <Logo />
             </Link>
 
             {/* Desktop Navigation */}
@@ -237,6 +232,7 @@ export default function Header() {
                 <div 
                   key={item.label}
                   className="relative group"
+                  ref={setNavItemRef(item.label)}
                   onMouseEnter={() => handleMouseEnter(item.label)}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -247,11 +243,10 @@ export default function Header() {
                     {item.label === 'Blog' && <BookOpen className="w-4 h-4 mr-1" />}
                     {item.label === 'Destinations' && <MapPin className="w-4 h-4 mr-1" />}
                     {item.label}
-                    {/* Only show chevron if dropdown exists AND has items */}
                     {item.dropdown && item.dropdown.length > 0 && <ChevronDown className="w-4 h-4" />}
                   </Link>
                   
-                  {/* Dropdown Menu - only render if dropdown exists and has items */}
+                  {/* Dropdown Menu */}
                   {item.dropdown && item.dropdown.length > 0 && activeDropdown === item.label && (
                     <div 
                       ref={setDropdownRef(item.label)}
@@ -282,12 +277,10 @@ export default function Header() {
 
             {/* Right Side Actions */}
             <div className="hidden lg:flex items-center gap-4">
-              {/* Search */}
               <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                 <Search className="w-5 h-5 text-gray-600" />
               </button>
               
-              {/* Gallery Quick Access */}
               <Link
                 href="/gallery"
                 className="px-4 py-2 bg-purple-50 text-purple-700 font-medium rounded-full hover:bg-purple-100 transition-colors flex items-center gap-2"
@@ -296,16 +289,6 @@ export default function Header() {
                 Gallery
               </Link>
               
-              {/* Destinations Quick Access */}
-              {/* <Link
-                href="/destinations"
-                className="px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-full hover:bg-blue-100 transition-colors flex items-center gap-2"
-              >
-                <MapPin className="w-4 h-4" />
-                Destinations
-              </Link> */}
-              
-              {/* Travel Button */}
               <button
                 onClick={handleTravelClick}
                 className="px-6 py-3 bg-gradient-to-r from-primary-500 to-orange-500 text-white font-semibold rounded-full hover:from-primary-600 hover:to-orange-600 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary-500/30"
@@ -333,23 +316,40 @@ export default function Header() {
               <div className="px-4 py-6 space-y-1">
                 {navItems.map((item) => (
                   <div key={item.label} className="border-b border-gray-100 last:border-0">
-                    <Link
-                      href={item.href}
-                      className="flex items-center gap-2 py-4 text-gray-700 hover:text-primary-500 font-medium"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {item.label === 'Blog' && <BookOpen className="w-4 h-4" />}
-                      {item.label === 'Destinations' && <MapPin className="w-4 h-4" />}
-                      {item.label}
-                    </Link>
-                    {item.dropdown && item.dropdown.length > 0 && (
-                      <div className="pl-4 pb-2 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={item.href}
+                        className="flex items-center gap-2 py-4 text-gray-700 hover:text-primary-500 font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {item.label === 'Blog' && <BookOpen className="w-4 h-4" />}
+                        {item.label === 'Destinations' && <MapPin className="w-4 h-4" />}
+                        {item.label}
+                      </Link>
+                      {item.dropdown && item.dropdown.length > 0 && (
+                        <button
+                          onClick={() => handleNavItemClick(item.label)}
+                          className="p-2"
+                        >
+                          <ChevronDown className={`w-4 h-4 transition-transform ${
+                            activeDropdown === item.label ? 'rotate-180' : ''
+                          }`} />
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Mobile Dropdown */}
+                    {item.dropdown && item.dropdown.length > 0 && activeDropdown === item.label && (
+                      <div className="pl-4 pb-2 space-y-1 animate-slideDown">
                         {item.dropdown.map((subItem) => (
                           <Link
                             key={subItem.label}
                             href={subItem.href}
-                            className="flex items-center gap-2 py-2 text-gray-500 hover:text-primary-500"
-                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-2 py-2 text-gray-500 hover:text-primary-500 pl-4 border-l-2 border-gray-200"
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              setActiveDropdown(null);
+                            }}
                           >
                             {subItem.icon && subItem.icon}
                             {subItem.label}
@@ -367,7 +367,6 @@ export default function Header() {
                     <span>Search Tours</span>
                   </button>
                   
-                  {/* Gallery Mobile Button */}
                   <Link
                     href="/gallery"
                     className="flex items-center justify-center gap-2 w-full py-3 bg-purple-50 text-purple-700 font-medium rounded-lg"
@@ -377,7 +376,6 @@ export default function Header() {
                     Explore Gallery
                   </Link>
                   
-                  {/* Destinations Mobile Button */}
                   <Link
                     href="/destinations"
                     className="flex items-center justify-center gap-2 w-full py-3 bg-blue-50 text-blue-700 font-medium rounded-lg"
@@ -413,6 +411,24 @@ export default function Header() {
           difficulty: "All Levels"
         }}
       />
+
+      {/* Animation styles */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-slideDown {
+          animation: slideDown 0.2s ease-out;
+        }
+      `}</style>
     </>
   );
 }

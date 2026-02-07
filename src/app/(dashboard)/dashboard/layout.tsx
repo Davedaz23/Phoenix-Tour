@@ -1,3 +1,4 @@
+// src/app/(dashboard)/dashboard/layout.tsx
 'use client';
 
 import { useSession } from 'next-auth/react';
@@ -21,8 +22,6 @@ export default function DashboardLayout({
   const isAuthPage = isLoginPage || isSignupPage;
 
   useEffect(() => {
-    console.log("Session status:", status, "Session data:", session);
-    
     // Only run redirect logic after session is loaded
     if (status === 'loading') {
       return;
@@ -30,14 +29,12 @@ export default function DashboardLayout({
 
     // If user is authenticated and on auth pages, redirect to dashboard
     if (status === 'authenticated' && isAuthPage) {
-      console.log("Authenticated user on auth page, redirecting to dashboard");
       redirect('/dashboard');
       return;
     }
 
     // If user is not authenticated and not on auth pages, redirect to login
     if (status === 'unauthenticated' && !isAuthPage) {
-      console.log("Unauthenticated user, redirecting to login");
       redirect('/dashboard/login');
       return;
     }
@@ -47,7 +44,6 @@ export default function DashboardLayout({
       const isAdmin = session.user.role === 'admin' || session.user.role === 'super_admin';
       
       if (!isAdmin && pathname.startsWith('/dashboard')) {
-        console.log("Non-admin user trying to access dashboard, redirecting to home");
         redirect('/');
         return;
       }
@@ -57,10 +53,14 @@ export default function DashboardLayout({
   // Show loading state
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-green-500 mx-auto mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-green-500 animate-ping opacity-20"></div>
+            <Loader2 className="w-8 h-8 animate-spin text-green-500 mx-auto mb-4 absolute inset-0 m-auto" />
+          </div>
+          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+          <p className="text-gray-400 text-sm mt-2">Preparing your workspace</p>
         </div>
       </div>
     );
@@ -68,24 +68,35 @@ export default function DashboardLayout({
 
   // Don't show layout on auth pages (login/signup)
   if (isAuthPage) {
-    return <>{children}</>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+        {children}
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Fixed Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-30 w-64">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/20 flex">
+      {/* Sidebar for mobile */}
+      <div className="lg:hidden">
+        <Sidebar  />
+      </div>
+      
+      {/* Sidebar for desktop */}
+      <div className="hidden lg:block fixed inset-y-0 left-0 z-30 w-64">
         <Sidebar />
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 ml-0 lg:ml-64 min-w-0">
-        <div className="sticky top-0 z-20 bg-white">
+      <div className="flex-1 lg:ml-64 min-w-0">
+        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
           <Header />
         </div>
         <main className="py-6">
           <div className="mx-auto px-4 sm:px-6 md:px-8">
-            {children}
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </div>
         </main>
       </div>

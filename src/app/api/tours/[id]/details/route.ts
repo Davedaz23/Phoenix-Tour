@@ -1,3 +1,5 @@
+
+//src\app\api\tours\[id]\details\route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';

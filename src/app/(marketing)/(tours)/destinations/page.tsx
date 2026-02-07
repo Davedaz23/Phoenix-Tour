@@ -726,12 +726,12 @@ export default function DestinationsPage() {
         </div>
 
         {/* Mock Data Notice */}
-        <div className="mt-8 text-center">
+        {/* <div className="mt-8 text-center">
           <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg">
             <Sparkles className="w-4 h-4" />
             <span className="text-sm">This is a demo page with sample destination data. Real data will load when connected to backend.</span>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

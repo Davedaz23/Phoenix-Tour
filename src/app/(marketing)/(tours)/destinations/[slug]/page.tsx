@@ -771,12 +771,12 @@ export default function DestinationPage() {
           </div>
 
           {/* Mock Data Notice */}
-          <div className="mt-12 text-center">
+          {/* <div className="mt-12 text-center">
             <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg">
               <BookOpen className="w-4 h-4" />
               <span className="text-sm">This is a demo page with sample destination data. Connect to backend for real data.</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

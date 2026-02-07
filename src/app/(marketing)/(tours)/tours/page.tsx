@@ -423,43 +423,54 @@ export default function ToursPage() {
   }, [searchParams]);
 
   // Fetch ALL tours on component mount with fallback
-  const fetchAllTours = useCallback(async () => {
-    setLoading(true);
-    setUseFallback(false);
-    
-    try {
-      console.log('Fetching ALL tours...');
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+ const fetchAllTours = useCallback(async () => {
+  setLoading(true);
+  setUseFallback(false);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch('/api/tours?limit=100', {
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log("All tours received:", data.tours?.length);
-      
-      if (data.success && data.tours && data.tours.length > 0) {
-        setAllTours(data.tours);
-      } else {
-        setUseFallback(true);
-        setAllTours(enhancedFallbackTours);
-      }
-    } catch (error) {
-      console.error('Failed to fetch tours:', error);
+  try {
+    console.log('Fetching ALL tours...');
+    
+    const response = await fetch('/api/tours?limit=100'
+    //   , {
+    //   signal: controller.signal
+    // }
+  
+  );
+    
+    clearTimeout(timeoutId); // Clear timeout on success
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("All tours received:", data.tours?.length);
+    
+    if (data.success && data.tours && data.tours.length > 0) {
+      setAllTours(data.tours);
+    } else {
       setUseFallback(true);
       setAllTours(enhancedFallbackTours);
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  } catch (error) {
+    clearTimeout(timeoutId); // Clear timeout on error too
+    
+    // Check if the error is an abort error
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      console.log('Request timed out, using fallback tours');
+    } else {
+      console.error('Failed to fetch tours:', error);
+    }
+    
+    setUseFallback(true);
+    setAllTours(enhancedFallbackTours);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     fetchAllTours();

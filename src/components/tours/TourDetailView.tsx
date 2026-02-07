@@ -606,7 +606,7 @@ export default function TourDetailView({ tourId, initialTour }: TourDetailViewPr
                             )}
                           </div>
                         </div>
-                        <div className="p-6">
+                        {/* <div className="p-6">
                           <p className="text-gray-700 mb-4">{day.description}</p>
                           
                           {day.meals && day.meals.length > 0 && (
@@ -635,7 +635,7 @@ export default function TourDetailView({ tourId, initialTour }: TourDetailViewPr
                               </ul>
                             </div>
                           )}
-                        </div>
+                        </div> */}
                       </div>
                     ))}
                   </div>
@@ -812,7 +812,7 @@ export default function TourDetailView({ tourId, initialTour }: TourDetailViewPr
 
           {/* Related Tours */}
           <div className="mt-12">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">You Might Also Like</h3>
+            {/* <h3 className="text-2xl font-bold text-gray-900 mb-6">You Might Also Like</h3> */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {Object.values(mockTours)
                 .filter(t => t._id !== tour._id && t.category === tour.category)
@@ -845,12 +845,12 @@ export default function TourDetailView({ tourId, initialTour }: TourDetailViewPr
           </div>
 
           {/* Mock Data Notice */}
-          <div className="mt-8 text-center">
+          {/* <div className="mt-8 text-center">
             <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg">
               <BookOpen className="w-4 h-4" />
               <span className="text-sm">This is a demo page with sample tour data. Connect to backend for real booking.</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

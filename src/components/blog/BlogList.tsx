@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import BlogCard from './BlogCard';
+import BlogCard from './BlogPostCard';
 import { Loader2 } from 'lucide-react';
 
 interface BlogPost {
